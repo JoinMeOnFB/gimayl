@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iOS 26 Lock Screen</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ff0055 0%, #ff8c00 25%, #ffea00 50%, #00ff88 75%, #0099ff 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 6s ease infinite;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .liquid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            z-index: 1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .lock-screen {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 40px 20px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .pin-display {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .pin-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            margin: 0 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        .pin-dot.filled {
+            background: rgba(255, 255, 255, 0.95);
+            transform: scale(1.3);
+            box-shadow: 0 0 15px rgba(255,255,255,0.7);
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 0 10px;
+        }
+
+        .glass-button {
+            --bg-color: rgba(255, 255, 255, 0.3);
+            --highlight: rgba(255, 255, 255, 0.85);
+            --text: #ffffff;
+            
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            overflow: hidden;
+            background: transparent;
+            transition: transform 0.2s ease;
+            outline: none;
+            margin: 0 auto;
+        }
+
+        .glass-button:active {
+            transform: scale(0.9);
+        }
+
+        .glass-filter,
+        .glass-overlay,
+        .glass-specular {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+        }
+
+        .glass-filter {
+            z-index: 1;
+            backdrop-filter: blur(5px);
+            filter: url(#glass-distortion) saturate(130%) brightness(1.2);
+        }
+
+        .glass-overlay {
+            z-index: 2;
+            background: var(--bg-color);
+        }
+
+        .glass-specular {
+            z-index: 3;
+            box-shadow: inset 1px 1px 2px var(--highlight);
+        }
+
+        .glass-content {
+            position: relative;
+            z-index: 4;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .glass-button.delete .glass-content {
+            font-size: 22px;
+        }
+
+        .status-message {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            height: 20px;
+            opacity: 0.9;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        @keyframes liquid {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-20px) rotate(1deg); }
+        }
+
+        .liquid-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.15), transparent);
+            animation: liquid 8s infinite linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="liquid-bg"></div>
+    
+    <svg style="display: none">
+        <filter id="glass-distortion">
+            <feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="77" />
+        </filter>
+    </svg>
+    
+    <div class="container">
+        <div class="lock-screen">
+            <div class="pin-display">
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+            </div>
+            
+            <div class="keypad">
+                <button class="glass-button" data-value="1">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content">1</div>
+                </button>
+                <button class="glass-button" data-value="2">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content">2</div>
+                </button>
+                <button class="glass-button" data-value="3">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content">3</div>
+                </button>
+                <button class="glass-button" data-value="4">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content">4</div>
+                </button>
+                <button class="glass-button" data-value="5">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content">5</div>
+                </button>
+                <button class="glass-button" data-value="6">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content">6</div>
+                </button>
+                <button class="glass-button" data-value="7">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content">7</div>
+                </button>
+                <button class="glass-button" data-value="8">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content">8</div>
+                </button>
+                <button class="glass-button" data-value="9">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content">9</div>
+                </button>
+                <div></div>
+                <button class="glass-button" data-value="0">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content">0</div>
+                </button>
+                <button class="glass-button delete" id="delete-key">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content">
+                        <i class="fas fa-delete-left"></i>
+                    </div>
+                </button>
+            </div>
+            
+            <div class="status-message" id="status-message"></div>
+        </div>
+    </div>
+
+    <script>
+        // PIN logic
+        const correctPIN = "8423";
+        let enteredPIN = "";
+        const pinDots = document.querySelectorAll('.pin-dot');
+        const statusMessage = document.getElementById('status-message');
+        
+        // Add event listeners to number keys
+        document.querySelectorAll('.glass-button[data-value]').forEach(key => {
+            key.addEventListener('click', () => {
+                if (enteredPIN.length < 4) {
+                    enteredPIN += key.getAttribute('data-value');
+                    updatePinDisplay();
+                    
+                    if (enteredPIN.length === 4) {
+                        checkPIN();
+                    }
+                }
+            });
+        });
+        
+        // Add event listener to delete key
+        document.getElementById('delete-key').addEventListener('click', () => {
+            if (enteredPIN.length > 0) {
+                enteredPIN = enteredPIN.slice(0, -1);
+                updatePinDisplay();
+                statusMessage.textContent = "";
+            }
+        });
+        
+        function updatePinDisplay() {
+            pinDots.forEach((dot, index) => {
+                if (index < enteredPIN.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            });
+        }
+        
+        function checkPIN() {
+            if (enteredPIN === correctPIN) {
+                statusMessage.textContent = "PIN correct! Redirecting...";
+                // Immediately redirect to Gmail
+                window.location.href = "https://mail.google.com";
+            } else {
+                statusMessage.textContent = "Incorrect PIN. Try again.";
+                // Clear PIN after a delay
+                setTimeout(() => {
+                    enteredPIN = "";
+                    updatePinDisplay();
+                    statusMessage.textContent = "";
+                }, 1500);
+            }
+        }
+    </script>
+</body>
+</html>
