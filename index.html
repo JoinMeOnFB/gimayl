@@ -9,8 +9,8 @@
   :root{
     --bg-page:#f6f8fc;
     --card-bg:rgba(255,255,255,0.98);
-    --accent:#4285f4;
-    --accent-pressed:#3367d6;
+    --accent:#d23f31;
+    --accent-pressed:#b02e23;
     --muted:#5f6368;
     --danger:#d93025;
     --glass-radius:8px;
@@ -21,7 +21,7 @@
   body{
     margin:0;
     font-family:Inter, Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
-    background:linear-gradient(135deg,#6a11cb 0%,#2575fc 100%), var(--bg-page);
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 25%, #ef9a9a 50%, #e57373 75%, #ef5350 100%);
     min-height:100vh;
     display:flex;
     align-items:center;
@@ -29,32 +29,67 @@
     padding:16px;
     -webkit-font-smoothing:antialiased;
     -moz-osx-font-smoothing:grayscale;
+    overflow-x:hidden;
   }
 
-  /* Card */
+  /* Card with enhanced animations */
   .card{
     width:100%;
     max-width:420px;
     background:var(--card-bg);
     border-radius:12px;
     padding:28px;
-    box-shadow:0 10px 30px rgba(10,10,20,0.18);
+    box-shadow:0 10px 30px rgba(183, 28, 28, 0.15);
     text-align:center;
     transform:translateZ(0);
+    animation:cardFloat 6000ms ease-in-out infinite;
+    border: 1px solid rgba(229, 115, 115, 0.2);
   }
+  
+  @keyframes cardFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(0.5deg); }
+  }
+
   .avatar{
     width:84px;height:84px;border-radius:50%;margin:0 auto 16px;
-    background:#f1f3f4;display:flex;align-items:center;justify-content:center;border:2px solid #e0e0e0;font-size:32px;color:var(--muted);
+    background:#ffebee;display:flex;align-items:center;justify-content:center;
+    border:2px solid #ef9a9a;font-size:32px;color:#d32f2f;
+    animation:avatarGlow 4000ms ease-in-out infinite;
   }
-  h1{font-size:20px;margin:8px 0 4px;color:#202124;font-weight:600}
-  p.lead{margin:0 0 18px;color:var(--muted);font-size:15px;line-height:1.35}
+  
+  @keyframes avatarGlow {
+    0%, 100% { box-shadow: 0 0 0px rgba(210, 63, 49, 0.3); }
+    50% { box-shadow: 0 0 12px rgba(210, 63, 49, 0.6); }
+  }
 
-  /* PIN dots */
+  h1{font-size:20px;margin:8px 0 4px;color:#c62828;font-weight:600}
+  p.lead{margin:0 0 18px;color:#d32f2f;font-size:15px;line-height:1.35}
+
+  /* PIN dots with enhanced animations */
   .pin-row{display:flex;gap:12px;justify-content:center;margin-bottom:20px}
   .dot{
-    width:16px;height:16px;border-radius:50%;background:#dadce0;transition:transform .18s cubic-bezier(.2,.9,.2,1), background .18s;
+    width:16px;height:16px;border-radius:50%;background:#ffcdd2;
+    transition:transform .18s cubic-bezier(.2,.9,.2,1), background .18s;
+    animation:dotPulse 3000ms ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * 200ms);
   }
-  .dot.filled{background:var(--accent);transform:scale(1.15)}
+  
+  @keyframes dotPulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+
+  .dot.filled{
+    background:var(--accent);
+    animation:filledPulse 1500ms ease-in-out infinite;
+    transform:scale(1.15);
+  }
+  
+  @keyframes filledPulse {
+    0%, 100% { transform: scale(1.15); box-shadow: 0 0 0px rgba(210, 63, 49, 0.4); }
+    50% { transform: scale(1.25); box-shadow: 0 0 8px rgba(210, 63, 49, 0.8); }
+  }
 
   /* keypad grid */
   .keypad{
@@ -64,7 +99,7 @@
     margin-bottom:12px;
   }
 
-  /* iOS6-style button adapted for grid */
+  /* iOS6-style button with enhanced animations */
   .key{
     --base:var(--accent);
     --base-pressed:var(--accent-pressed);
@@ -81,12 +116,28 @@
     cursor:pointer;
     user-select:none;
     -webkit-tap-highlight-color:transparent;
-    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    transition:all .15s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     will-change:transform;
+    animation:keyFloat 5000ms ease-in-out infinite;
+    animation-delay: calc(var(--key-delay, 0) * 100ms);
   }
-  .key:active{transform:translateY(1px);background:linear-gradient(to bottom, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.12) 100%), var(--base-pressed)}
+  
+  @keyframes keyFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-2px); }
+  }
+
+  .key:active{
+    transform:scale(0.92) rotate(-1deg);
+    background:linear-gradient(to bottom, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.12) 100%), var(--base-pressed);
+    animation:none;
+  }
+  
   @media (pointer:fine){
-    .key:hover{transform:translateY(-4px);box-shadow:0 10px 22px rgba(20,30,60,0.10)}
+    .key:hover{
+      transform:translateY(-6px) scale(1.05);
+      box-shadow:0 12px 25px rgba(183, 28, 28, 0.2);
+    }
   }
 
   /* transparent spacer cell */
@@ -98,18 +149,58 @@
 
   /* status & footer */
   .status{height:20px;margin:6px 0 0;color:var(--danger);font-size:14px}
-  .footer{margin-top:14px;color:var(--muted);font-size:13px}
+  .footer{
+    margin-top:14px;
+    color:#d32f2f;
+    font-size:13px;
+    animation:textShimmer 6000ms ease-in-out infinite;
+  }
+  
+  @keyframes textShimmer {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
 
-  /* playful micro-animations */
+  /* Enhanced micro-animations */
   .pulse{
-    display:inline-block;transform-origin:center center;
+    display:inline-block;
+    transform-origin:center center;
     animation:idlePulse 2500ms ease-in-out infinite;
     opacity:.98;
   }
+  
   @keyframes idlePulse{
-    0%{transform:scale(1)}
-    50%{transform:scale(1.006)}
-    100%{transform:scale(1)}
+    0%{transform:scale(1) rotate(0deg);}
+    33%{transform:scale(1.008) rotate(0.2deg);}
+    66%{transform:scale(0.998) rotate(-0.1deg);}
+    100%{transform:scale(1) rotate(0deg);}
+  }
+
+  /* Success celebration */
+  .celebrate {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* Background elements for calm red aesthetic */
+  .bg-bubble {
+    position: fixed;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    animation: floatBubble 15s infinite linear;
+    z-index: -1;
+  }
+
+  @keyframes floatBubble {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 0.3; }
+    90% { opacity: 0.2; }
+    100% { transform: translateY(-100px) scale(1); opacity: 0; }
   }
 
   /* responsive tweaks */
@@ -120,16 +211,19 @@
 </style>
 </head>
 <body>
+  <!-- Background bubbles -->
+  <div id="bubbles"></div>
+
   <main class="card pulse" role="main" aria-labelledby="title">
     <div class="avatar" aria-hidden="true"><i class="fas fa-user"></i></div>
     <h1 id="title">User Account</h1>
     <p class="lead">Enter your 4-digit PIN to access Gmail</p>
 
     <div class="pin-row" id="pinRow" aria-hidden="false">
-      <div class="dot" data-index="0"></div>
-      <div class="dot" data-index="1"></div>
-      <div class="dot" data-index="2"></div>
-      <div class="dot" data-index="3"></div>
+      <div class="dot" data-index="0" style="--i:0"></div>
+      <div class="dot" data-index="1" style="--i:1"></div>
+      <div class="dot" data-index="2" style="--i:2"></div>
+      <div class="dot" data-index="3" style="--i:3"></div>
     </div>
 
     <div class="keypad" id="keypad" aria-hidden="false">
@@ -141,17 +235,38 @@
   </main>
 
 <script>
-/* Mobile-optimized PIN entry
-   - Minimal DOM updates for performance
-   - Fetch placeholder function; replace with real fetch when allowed
-   - Smooth, lightweight animations via CSS only
-*/
+/* Enhanced PIN entry with calm red background */
 
 const PIN_LENGTH = 4;
 let entered = '';
 const dots = document.querySelectorAll('.dot');
 const statusEl = document.getElementById('status');
 const keypadEl = document.getElementById('keypad');
+
+/* Create calming background bubbles */
+function createBubbles() {
+  const bubblesContainer = document.getElementById('bubbles');
+  for (let i = 0; i < 12; i++) {
+    const bubble = document.createElement('div');
+    bubble.className = 'bg-bubble';
+    const size = 20 + Math.random() * 80;
+    const left = Math.random() * 100;
+    const duration = 15 + Math.random() * 20;
+    const delay = Math.random() * 15;
+    
+    Object.assign(bubble.style, {
+      width: `${size}px`,
+      height: `${size}px`,
+      left: `${left}%`,
+      animationDelay: `${delay}s`,
+      animationDuration: `${duration}s`
+    });
+    
+    bubblesContainer.appendChild(bubble);
+  }
+}
+
+createBubbles();
 
 /* Button layout */
 const layout = [
@@ -161,9 +276,9 @@ const layout = [
   'sp','0','del'
 ];
 
-/* Create buttons (fast DOM construction) */
+/* Create buttons with staggered animation delays */
 const fragment = document.createDocumentFragment();
-layout.forEach(key=>{
+layout.forEach((key, index)=>{
   const el = document.createElement('button');
   if(key==='sp'){
     el.className='spacer';
@@ -173,28 +288,22 @@ layout.forEach(key=>{
     el.className = key==='del' ? 'key icon' : 'key';
     el.type = 'button';
     el.dataset.value = key==='del' ? 'del' : key;
+    el.style.setProperty('--key-delay', index);
     el.setAttribute('aria-label', key==='del' ? 'delete' : `digit ${key}`);
     el.innerHTML = key==='del' ? '<i class="fas fa-delete-left"></i>' : key;
-    // fast event handler (delegation alternative would be possible)
     el.addEventListener('click', onKey);
   }
   fragment.appendChild(el);
 });
 keypadEl.appendChild(fragment);
 
-/* Mock fetch function — replace with real fetch when allowed */
+/* Mock fetch function */
 async function fetchPinFromRemote(){
-  // Example: use real fetch like below if CORS and URL permit:
-  // const resp = await fetch('https://raw.githubusercontent.com/JoinMeOnFB/gimayl/refs/heads/main/NUM.txt', {cache:'no-store'});
-  // if(!resp.ok) throw new Error('Network error');
-  // return (await resp.text()).trim();
-
-  // For safety here, simulate network latency and return a PIN "8423"
-  await new Promise(r=>setTimeout(r, 180)); // tiny delay
+  await new Promise(r=>setTimeout(r, 180));
   return '8423';
 }
 
-/* Cache remote PIN (fetch once) */
+/* Cache remote PIN */
 let remotePin = null;
 let fetching = null;
 function ensureRemotePin(){
@@ -209,19 +318,61 @@ function ensureRemotePin(){
 
 /* update visuals */
 function updateDots(){
-  dots.forEach((d,i)=> d.classList.toggle('filled', i < entered.length));
-}
-
-/* simple haptic-ish animation: brief scale using CSS via inline style for perf */
-function nudge(el, dur=130){
-  el.style.transition = `transform ${dur}ms cubic-bezier(.2,.9,.2,1)`;
-  el.style.transform = 'scale(0.98)';
-  requestAnimationFrame(()=> {
-    setTimeout(()=> {
-      el.style.transform = '';
-    }, 10);
+  dots.forEach((d,i)=> {
+    const wasFilled = d.classList.contains('filled');
+    const isFilled = i < entered.length;
+    
+    if(isFilled && !wasFilled) {
+      // New fill - bounce animation
+      d.style.animation = 'none';
+      setTimeout(() => {
+        d.style.animation = 'filledPulse 1500ms ease-in-out infinite';
+      }, 10);
+    }
+    
+    d.classList.toggle('filled', isFilled);
   });
 }
+
+/* Enhanced key press animation */
+function playKeyAnimation(el){
+  el.style.animation = 'none';
+  el.style.transform = 'scale(0.85) rotate(-3deg)';
+  
+  // Create ripple effect
+  const rect = el.getBoundingClientRect();
+  const ripple = document.createElement('div');
+  ripple.style.cssText = `
+    position: fixed;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: rgba(210, 63, 49, 0.3);
+    left: ${rect.left + rect.width/2 - 30}px;
+    top: ${rect.top + rect.height/2 - 30}px;
+    pointer-events: none;
+    z-index: 100;
+    animation: rippleExpand 400ms ease-out forwards;
+  `;
+  
+  document.body.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 400);
+  
+  // Restore animation
+  setTimeout(() => {
+    el.style.transform = '';
+    el.style.animation = `keyFloat 5000ms ease-in-out ${el.style.getPropertyValue('--key-delay') * 100}ms infinite`;
+  }, 150);
+}
+
+/* Enhanced ripple animation */
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes rippleExpand {
+    0% { transform: scale(0.5); opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
 
 /* key handler */
 async function onKey(e){
@@ -231,24 +382,31 @@ async function onKey(e){
     entered = entered.slice(0,-1);
     updateDots();
     statusEl.textContent = '';
-    nudge(this);
+    playKeyAnimation(this);
     return;
   }
   if(entered.length >= PIN_LENGTH) return;
   entered += v;
   updateDots();
-  nudge(this);
+  playKeyAnimation(this);
+  
   if(entered.length === PIN_LENGTH){
-    // instant feedback
     statusEl.textContent = 'Checking…';
-    // fetch remote PIN if needed
+    statusEl.style.opacity = '0';
+    statusEl.style.transform = 'translateY(-10px)';
+    statusEl.style.transition = 'all 0.3s ease';
+    
+    setTimeout(() => {
+      statusEl.style.opacity = '1';
+      statusEl.style.transform = 'translateY(0)';
+    }, 50);
+    
     const pin = await ensureRemotePin();
-    // small delay for UX (keeps things feeling playful)
     await new Promise(r=>setTimeout(r, 220));
+    
     if(pin && entered === pin){
       statusEl.style.color = '';
-      statusEl.textContent = '';
-      // success micro-animation
+      statusEl.textContent = 'Success! Redirecting...';
       successFlow();
     } else {
       statusEl.style.color = 'var(--danger)';
@@ -258,56 +416,112 @@ async function onKey(e){
   }
 }
 
-/* success: show overlay then redirect */
+/* Enhanced success animation */
 function successFlow(){
-  // quick confetti-lite effect using simple DOM nodes (very cheap)
-  for(let i=0;i<10;i++){
-    const c = document.createElement('span');
+  // Create celebration container
+  const celebrate = document.createElement('div');
+  celebrate.className = 'celebrate';
+  document.body.appendChild(celebrate);
+  
+  // Enhanced confetti with red theme colors
+  const colors = ['#d23f31', '#ef5350', '#e57373', '#f44336', '#ef9a9a', '#ff8a80'];
+  
+  for(let i=0;i<25;i++){
+    const c = document.createElement('div');
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = 6 + Math.random() * 8;
+    const angle = Math.random() * 360;
+    
     Object.assign(c.style,{
       position:'fixed',
-      left: (40 + Math.random()*80) + '%',
-      top: (20 + Math.random()*30) + '%',
-      width:'8px',height:'8px',borderRadius:'2px',
-      background: i%2 ? '#34A853' : '#4285f4',
-      transform:`translateY(0) scale(0.6) rotate(${Math.random()*360}deg)`,
-      opacity:1, pointerEvents:'none', zIndex:9999,
-      transition:'transform 700ms cubic-bezier(.2,.9,.2,1), opacity 700ms'
+      left: (30 + Math.random()*40) + '%',
+      top: (10 + Math.random()*20) + '%',
+      width: `${size}px`,
+      height: `${size}px`,
+      borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+      background: color,
+      transform:`translateY(0) rotate(${angle}deg)`,
+      opacity:1, 
+      pointerEvents:'none', 
+      zIndex:1000,
+      animation:`confettiFall ${800 + Math.random() * 800}ms cubic-bezier(0.2,0.9,0.2,1) forwards`
     });
-    document.body.appendChild(c);
-    requestAnimationFrame(()=> {
-      c.style.transform = `translateY(${80 + Math.random()*40}px) scale(${1+Math.random()}) rotate(${Math.random()*720}deg)`;
-      c.style.opacity = '0';
-    });
-    setTimeout(()=> c.remove(), 900);
+    
+    celebrate.appendChild(c);
+    
+    // Remove after animation
+    setTimeout(() => c.remove(), 1600);
   }
-
-  // redirect to Gmail after brief pause
-  setTimeout(()=> {
+  
+  // Add confetti fall animation
+  const confettiStyle = document.createElement('style');
+  confettiStyle.textContent = `
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translateY(120vh) rotate(${360 + Math.random() * 360}deg) scale(0.5); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(confettiStyle);
+  
+  // Card celebration dance
+  const card = document.querySelector('.card');
+  card.style.animation = 'cardFloat 200ms ease-in-out infinite';
+  
+  // Redirect to Gmail after celebration
+  setTimeout(() => {
     window.location.href = 'https://mail.google.com';
-  }, 900);
+  }, 1200);
 }
 
-/* wrong PIN animation */
+/* Enhanced wrong PIN animation */
 function shakeAndClear(){
   const card = document.querySelector('.card');
-  card.style.transition = 'transform 260ms cubic-bezier(.2,.9,.2,1)';
-  card.style.transform = 'translateX(-8px)';
-  setTimeout(()=> card.style.transform = 'translateX(8px)', 80);
-  setTimeout(()=> card.style.transform = '', 220);
-  setTimeout(()=> {
+  card.style.animation = 'none';
+  card.style.transition = 'transform 300ms cubic-bezier(.2,.9,.2,1)';
+  
+  // Enhanced shake with rotation
+  const shake = [
+    'translateX(-12px) rotate(-2deg)',
+    'translateX(10px) rotate(3deg)',
+    'translateX(-8px) rotate(-1deg)',
+    'translateX(6px) rotate(1deg)',
+    'translateX(0px) rotate(0deg)'
+  ];
+  
+  shake.forEach((transform, i) => {
+    setTimeout(() => {
+      card.style.transform = transform;
+    }, i * 80);
+  });
+  
+  setTimeout(() => {
     entered = '';
     updateDots();
     statusEl.textContent = '';
-  }, 700);
+    card.style.animation = 'cardFloat 6000ms ease-in-out infinite';
+  }, 800);
 }
 
-/* initialize: prefetch remote PIN in background for speed */
+/* Initialize with prefetch */
 ensureRemotePin();
 
-/* accessibility: allow keyboard for testing */
+/* Accessibility: keyboard support */
 window.addEventListener('keydown', (ev)=>{
-  if(ev.key === 'Backspace'){ document.querySelector('[data-value="del"]').click(); ev.preventDefault(); }
-  if(/^[0-9]$/.test(ev.key)){ const btn = document.querySelector(`[data-value="${ev.key}"]`); if(btn) btn.click(); }
+  if(ev.key === 'Backspace'){ 
+    const delBtn = document.querySelector('[data-value="del"]');
+    if(delBtn) {
+      delBtn.click(); 
+      playKeyAnimation(delBtn);
+    }
+    ev.preventDefault(); 
+  }
+  if(/^[0-9]$/.test(ev.key)){ 
+    const btn = document.querySelector(`[data-value="${ev.key}"]`); 
+    if(btn) {
+      btn.click();
+      playKeyAnimation(btn);
+    }
+  }
 });
 </script>
 </body>
