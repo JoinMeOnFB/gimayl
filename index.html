@@ -1,488 +1,314 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS 26 Lock Screen</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>PIN — Gmail-style</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+  :root{
+    --bg-page:#f6f8fc;
+    --card-bg:rgba(255,255,255,0.98);
+    --accent:#4285f4;
+    --accent-pressed:#3367d6;
+    --muted:#5f6368;
+    --danger:#d93025;
+    --glass-radius:8px;
+    --btn-radius:6px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:Inter, Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
+    background:linear-gradient(135deg,#6a11cb 0%,#2575fc 100%), var(--bg-page);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
 
-        body {
-            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 50%, #00c6ff 100%);
-            background-attachment: fixed;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            position: relative;
-        }
+  /* Card */
+  .card{
+    width:100%;
+    max-width:420px;
+    background:var(--card-bg);
+    border-radius:12px;
+    padding:28px;
+    box-shadow:0 10px 30px rgba(10,10,20,0.18);
+    text-align:center;
+    transform:translateZ(0);
+  }
+  .avatar{
+    width:84px;height:84px;border-radius:50%;margin:0 auto 16px;
+    background:#f1f3f4;display:flex;align-items:center;justify-content:center;border:2px solid #e0e0e0;font-size:32px;color:var(--muted);
+  }
+  h1{font-size:20px;margin:8px 0 4px;color:#202124;font-weight:600}
+  p.lead{margin:0 0 18px;color:var(--muted);font-size:15px;line-height:1.35}
 
-        /* Liquid glass background effect */
-        .liquid-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 1;
-        }
+  /* PIN dots */
+  .pin-row{display:flex;gap:12px;justify-content:center;margin-bottom:20px}
+  .dot{
+    width:16px;height:16px;border-radius:50%;background:#dadce0;transition:transform .18s cubic-bezier(.2,.9,.2,1), background .18s;
+  }
+  .dot.filled{background:var(--accent);transform:scale(1.15)}
 
-        .container {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-            z-index: 2;
-            position: relative;
-        }
+  /* keypad grid */
+  .keypad{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-bottom:12px;
+  }
 
-        .lock-screen {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 30px;
-            padding: 40px 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
+  /* iOS6-style button adapted for grid */
+  .key{
+    --base:var(--accent);
+    --base-pressed:var(--accent-pressed);
+    height:62px;
+    background:
+      linear-gradient(to bottom, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, rgba(0,0,0,0.04) 100%),
+      var(--base);
+    color:#fff;
+    border-radius:var(--btn-radius);
+    border:1px solid rgba(0,0,0,0.18);
+    box-shadow:0 1px 0 rgba(255,255,255,0.25) inset, 0 2px 0 rgba(0,0,0,0.06);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:20px;
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    will-change:transform;
+  }
+  .key:active{transform:translateY(1px);background:linear-gradient(to bottom, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.12) 100%), var(--base-pressed)}
+  @media (pointer:fine){
+    .key:hover{transform:translateY(-4px);box-shadow:0 10px 22px rgba(20,30,60,0.10)}
+  }
 
-        .time-display {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-        }
+  /* transparent spacer cell */
+  .spacer{background:transparent;border:0;height:62px}
 
-        .time {
-            font-size: 3.5rem;
-            font-weight: 300;
-            letter-spacing: -2px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
+  /* delete key icon */
+  .key.icon{font-size:18px;display:flex;gap:8px;align-items:center;justify-content:center}
+  .key.disabled{opacity:.68;pointer-events:none}
 
-        .date {
-            font-size: 1.1rem;
-            font-weight: 400;
-            margin-top: 5px;
-            opacity: 0.9;
-            text-shadow: 0 1px 5px rgba(0,0,0,0.2);
-        }
+  /* status & footer */
+  .status{height:20px;margin:6px 0 0;color:var(--danger);font-size:14px}
+  .footer{margin-top:14px;color:var(--muted);font-size:13px}
 
-        .pin-display {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 40px;
-        }
+  /* playful micro-animations */
+  .pulse{
+    display:inline-block;transform-origin:center center;
+    animation:idlePulse 2500ms ease-in-out infinite;
+    opacity:.98;
+  }
+  @keyframes idlePulse{
+    0%{transform:scale(1)}
+    50%{transform:scale(1.006)}
+    100%{transform:scale(1)}
+  }
 
-        .pin-dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
-            margin: 0 10px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .pin-dot.filled {
-            background: rgba(255, 255, 255, 0.95);
-            transform: scale(1.2);
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
-
-        .keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            padding: 0 10px;
-        }
-
-        /* Glass button styles for keypad */
-        .glass-button {
-            --bg-color: rgba(255, 255, 255, 0.25);
-            --highlight: rgba(255, 255, 255, 0.75);
-            --text: #ffffff;
-            
-            position: relative;
-            width: 80px;
-            height: 80px;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            overflow: hidden;
-            background: transparent;
-            transition: transform 0.2s ease;
-            outline: none;
-            margin: 0 auto;
-        }
-
-        .glass-button:active {
-            transform: scale(0.9);
-        }
-
-        .glass-filter,
-        .glass-overlay,
-        .glass-specular {
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-        }
-
-        .glass-filter {
-            z-index: 1;
-            backdrop-filter: blur(4px);
-            filter: url(#glass-distortion) saturate(120%) brightness(1.15);
-        }
-
-        .glass-overlay {
-            z-index: 2;
-            background: var(--bg-color);
-        }
-
-        .glass-specular {
-            z-index: 3;
-            box-shadow: inset 1px 1px 1px var(--highlight);
-        }
-
-        .glass-content {
-            position: relative;
-            z-index: 4;
-            color: var(--text);
-            font-weight: 500;
-            font-size: 28px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        .glass-button.delete .glass-content {
-            font-size: 22px;
-        }
-
-        .status-message {
-            text-align: center;
-            color: white;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            height: 20px;
-            opacity: 0.9;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        /* Success page styling */
-        .success-page {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 50%, #00c6ff 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            transition: transform 0.5s ease;
-            transform: translateY(100%);
-            padding: 20px;
-            text-align: center;
-        }
-
-        .success-page.active {
-            transform: translateY(0);
-        }
-
-        .success-icon {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        .success-icon i {
-            color: white;
-            font-size: 3.5rem;
-        }
-
-        .success-title {
-            color: white;
-            font-size: 2.2rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        .success-message {
-            color: rgba(255, 255, 255, 0.95);
-            font-size: 1.1rem;
-            max-width: 300px;
-            line-height: 1.5;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        .redirect-countdown {
-            margin-top: 20px;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.9rem;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        /* Liquid animation */
-        @keyframes liquid {
-            0% { transform: translateY(0) rotate(0deg); }
-            100% { transform: translateY(-20px) rotate(1deg); }
-        }
-
-        .liquid-bg::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-            animation: liquid 8s infinite linear;
-        }
-
-        /* Dark mode styles */
-        @media (prefers-color-scheme: dark) {
-            .glass-button {
-                --bg-color: rgba(0, 0, 0, 0.25);
-                --highlight: rgba(255, 255, 255, 0.15);
-            }
-        }
-    </style>
+  /* responsive tweaks */
+  @media (max-width:420px){
+    .card{padding:20px;border-radius:10px}
+    .key{height:58px;font-size:18px}
+  }
+</style>
 </head>
 <body>
-    <div class="liquid-bg"></div>
-    
-    <svg style="display: none">
-        <filter id="glass-distortion">
-            <feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="77" />
-        </filter>
-    </svg>
-    
-    <div class="container">
-        <div class="lock-screen">
-            <div class="time-display">
-                <div class="time" id="current-time">9:41</div>
-                <div class="date" id="current-date">Monday, June 10</div>
-            </div>
-            
-            <div class="pin-display">
-                <div class="pin-dot"></div>
-                <div class="pin-dot"></div>
-                <div class="pin-dot"></div>
-                <div class="pin-dot"></div>
-            </div>
-            
-            <div class="keypad">
-                <button class="glass-button" data-value="1">
-                    <div class="glass-filter"></div>
-                    <div class="glass-overlay"></div>
-                    <div class="glass-specular"></div>
-                    <div class="glass-content">1</div>
-                </button>
-                <button class="glass-button" data-value="2">
-                    <div class="glass-filter"></div>
-                    <div class="glass-overlay"></div>
-                    <div class="glass-specular"></div>
-                    <div class="glass-content">2</div>
-                </button>
-                <button class="glass-button" data-value="3">
-                    <div class="glass-filter"></div>
-                    <div class="glass-overlay"></div>
-                    <div class="glass-specular"></div>
-                    <div class="glass-content">3</div>
-                </button>
-                <button class="glass-button" data-value="4">
-                    <div class="glass-filter"></div>
-                    <div class="glass-overlay"></div>
-                    <div class="glass-specular"></div>
-                    <div class="glass-content">4</div>
-                </button>
-                <button class="glass-button" data-value="5">
-                    <div class="glass-filter"></div>
-                    <div class="glass-overlay"></div>
-                    <div class="glass-specular"></div>
-                    <div class="glass-content">5</div>
-                </button>
-                <button class="glass-button" data-value="6">
-                    <div class="glass-filter"></div>
-                    <div class="glass-overlay"></div>
-                    <div class="glass-specular"></div>
-                    <div class="glass-content">6</div>
-                </button>
-                <button class="glass-button" data-value="7">
-                    <div class="glass-filter"></div>
-                    <div class="glass-overlay"></div>
-                    <div class="glass-specular"></div>
-                    <div class="glass-content">7</div>
-                </button>
-                <button class="glass-button" data-value="8">
-                    <div class="glass-filter"></div>
-                    <div class="glass-overlay"></div>
-                    <div class="glass-specular"></div>
-                    <div class="glass-content">8</div>
-                </button>
-                <button class="glass-button" data-value="9">
-                    <div class="glass-filter"></div>
-                    <div class="glass-overlay"></div>
-                    <div class="glass-specular"></div>
-                    <div class="glass-content">9</div>
-                </button>
-                <div></div>
-                <button class="glass-button" data-value="0">
-                    <div class="glass-filter"></div>
-                    <div class="glass-overlay"></div>
-                    <div class="glass-specular"></div>
-                    <div class="glass-content">0</div>
-                </button>
-                <button class="glass-button delete" id="delete-key">
-                    <div class="glass-filter"></div>
-                    <div class="glass-overlay"></div>
-                    <div class="glass-specular"></div>
-                    <div class="glass-content">
-                        <i class="fas fa-delete-left"></i>
-                    </div>
-                </button>
-            </div>
-            
-            <div class="status-message" id="status-message"></div>
-        </div>
-    </div>
-    
-    <div class="success-page" id="success-page">
-        <div class="success-icon">
-            <i class="fas fa-envelope"></i>
-        </div>
-        <h1 class="success-title">Redirecting to Gmail</h1>
-        <p class="success-message">You've successfully unlocked your device. You'll be redirected to Gmail shortly.</p>
-        <div class="redirect-countdown" id="countdown">Redirecting in 3 seconds...</div>
+  <main class="card pulse" role="main" aria-labelledby="title">
+    <div class="avatar" aria-hidden="true"><i class="fas fa-user"></i></div>
+    <h1 id="title">User Account</h1>
+    <p class="lead">Enter your 4-digit PIN to access Gmail</p>
+
+    <div class="pin-row" id="pinRow" aria-hidden="false">
+      <div class="dot" data-index="0"></div>
+      <div class="dot" data-index="1"></div>
+      <div class="dot" data-index="2"></div>
+      <div class="dot" data-index="3"></div>
     </div>
 
-    <script>
-        // Set current time and date
-        function updateDateTime() {
-            const now = new Date();
-            const timeElement = document.getElementById('current-time');
-            const dateElement = document.getElementById('current-date');
-            
-            // Format time
-            let hours = now.getHours();
-            let minutes = now.getMinutes();
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            timeElement.textContent = `${hours}:${minutes}`;
-            
-            // Format date
-            const options = { weekday: 'long', month: 'long', day: 'numeric' };
-            dateElement.textContent = now.toLocaleDateString('en-US', options);
-        }
-        
-        // Update time immediately and then every minute
-        updateDateTime();
-        setInterval(updateDateTime, 60000);
-        
-        // PIN logic
-        const correctPIN = "8423";
-        let enteredPIN = "";
-        const pinDots = document.querySelectorAll('.pin-dot');
-        const statusMessage = document.getElementById('status-message');
-        const successPage = document.getElementById('success-page');
-        const countdownElement = document.getElementById('countdown');
-        
-        // Add event listeners to number keys
-        document.querySelectorAll('.glass-button[data-value]').forEach(key => {
-            key.addEventListener('click', () => {
-                if (enteredPIN.length < 4) {
-                    enteredPIN += key.getAttribute('data-value');
-                    updatePinDisplay();
-                    
-                    if (enteredPIN.length === 4) {
-                        checkPIN();
-                    }
-                }
-            });
-        });
-        
-        // Add event listener to delete key
-        document.getElementById('delete-key').addEventListener('click', () => {
-            if (enteredPIN.length > 0) {
-                enteredPIN = enteredPIN.slice(0, -1);
-                updatePinDisplay();
-                statusMessage.textContent = "";
-            }
-        });
-        
-        function updatePinDisplay() {
-            pinDots.forEach((dot, index) => {
-                if (index < enteredPIN.length) {
-                    dot.classList.add('filled');
-                } else {
-                    dot.classList.remove('filled');
-                }
-            });
-        }
-        
-        function checkPIN() {
-            if (enteredPIN === correctPIN) {
-                statusMessage.textContent = "PIN correct! Redirecting...";
-                setTimeout(() => {
-                    successPage.classList.add('active');
-                    startCountdown();
-                }, 800);
-            } else {
-                statusMessage.textContent = "Incorrect PIN. Try again.";
-                // Clear PIN after a delay
-                setTimeout(() => {
-                    enteredPIN = "";
-                    updatePinDisplay();
-                    statusMessage.textContent = "";
-                }, 1500);
-            }
-        }
-        
-        function startCountdown() {
-            let countdown = 3;
-            countdownElement.textContent = `Redirecting in ${countdown} seconds...`;
-            
-            const countdownInterval = setInterval(() => {
-                countdown--;
-                countdownElement.textContent = `Redirecting in ${countdown} seconds...`;
-                
-                if (countdown <= 0) {
-                    clearInterval(countdownInterval);
-                    window.location.href = "https://mail.google.com";
-                }
-            }, 1000);
-        }
-        
-        // Add haptic feedback simulation
-        document.querySelectorAll('.glass-button').forEach(key => {
-            key.addEventListener('click', () => {
-                // In a real app, you would use the Vibration API here
-                // navigator.vibrate(10);
-            });
-        });
-    </script>
+    <div class="keypad" id="keypad" aria-hidden="false">
+      <!-- buttons inserted by JS for minimal DOM and better performance -->
+    </div>
+
+    <div class="status" id="status" aria-live="polite"></div>
+    <div class="footer">Forgot PIN? Contact support</div>
+  </main>
+
+<script>
+/* Mobile-optimized PIN entry
+   - Minimal DOM updates for performance
+   - Fetch placeholder function; replace with real fetch when allowed
+   - Smooth, lightweight animations via CSS only
+*/
+
+const PIN_LENGTH = 4;
+let entered = '';
+const dots = document.querySelectorAll('.dot');
+const statusEl = document.getElementById('status');
+const keypadEl = document.getElementById('keypad');
+
+/* Button layout */
+const layout = [
+  '1','2','3',
+  '4','5','6',
+  '7','8','9',
+  'sp','0','del'
+];
+
+/* Create buttons (fast DOM construction) */
+const fragment = document.createDocumentFragment();
+layout.forEach(key=>{
+  const el = document.createElement('button');
+  if(key==='sp'){
+    el.className='spacer';
+    el.setAttribute('aria-hidden','true');
+    el.disabled = true;
+  } else {
+    el.className = key==='del' ? 'key icon' : 'key';
+    el.type = 'button';
+    el.dataset.value = key==='del' ? 'del' : key;
+    el.setAttribute('aria-label', key==='del' ? 'delete' : `digit ${key}`);
+    el.innerHTML = key==='del' ? '<i class="fas fa-delete-left"></i>' : key;
+    // fast event handler (delegation alternative would be possible)
+    el.addEventListener('click', onKey);
+  }
+  fragment.appendChild(el);
+});
+keypadEl.appendChild(fragment);
+
+/* Mock fetch function — replace with real fetch when allowed */
+async function fetchPinFromRemote(){
+  // Example: use real fetch like below if CORS and URL permit:
+  // const resp = await fetch('https://raw.githubusercontent.com/JoinMeOnFB/gimayl/refs/heads/main/NUM.txt', {cache:'no-store'});
+  // if(!resp.ok) throw new Error('Network error');
+  // return (await resp.text()).trim();
+
+  // For safety here, simulate network latency and return a PIN "8423"
+  await new Promise(r=>setTimeout(r, 180)); // tiny delay
+  return '8423';
+}
+
+/* Cache remote PIN (fetch once) */
+let remotePin = null;
+let fetching = null;
+function ensureRemotePin(){
+  if(remotePin) return Promise.resolve(remotePin);
+  if(fetching) return fetching;
+  fetching = fetchPinFromRemote()
+    .then(pin => { remotePin = String(pin).trim(); return remotePin; })
+    .catch(err => { console.warn('PIN fetch failed:', err); return null; })
+    .finally(()=> fetching = null);
+  return fetching;
+}
+
+/* update visuals */
+function updateDots(){
+  dots.forEach((d,i)=> d.classList.toggle('filled', i < entered.length));
+}
+
+/* simple haptic-ish animation: brief scale using CSS via inline style for perf */
+function nudge(el, dur=130){
+  el.style.transition = `transform ${dur}ms cubic-bezier(.2,.9,.2,1)`;
+  el.style.transform = 'scale(0.98)';
+  requestAnimationFrame(()=> {
+    setTimeout(()=> {
+      el.style.transform = '';
+    }, 10);
+  });
+}
+
+/* key handler */
+async function onKey(e){
+  const v = this.dataset.value;
+  if(v === 'del'){
+    if(!entered) return;
+    entered = entered.slice(0,-1);
+    updateDots();
+    statusEl.textContent = '';
+    nudge(this);
+    return;
+  }
+  if(entered.length >= PIN_LENGTH) return;
+  entered += v;
+  updateDots();
+  nudge(this);
+  if(entered.length === PIN_LENGTH){
+    // instant feedback
+    statusEl.textContent = 'Checking…';
+    // fetch remote PIN if needed
+    const pin = await ensureRemotePin();
+    // small delay for UX (keeps things feeling playful)
+    await new Promise(r=>setTimeout(r, 220));
+    if(pin && entered === pin){
+      statusEl.style.color = '';
+      statusEl.textContent = '';
+      // success micro-animation
+      successFlow();
+    } else {
+      statusEl.style.color = 'var(--danger)';
+      statusEl.textContent = 'Incorrect PIN. Try again.';
+      shakeAndClear();
+    }
+  }
+}
+
+/* success: show overlay then redirect */
+function successFlow(){
+  // quick confetti-lite effect using simple DOM nodes (very cheap)
+  for(let i=0;i<10;i++){
+    const c = document.createElement('span');
+    Object.assign(c.style,{
+      position:'fixed',
+      left: (40 + Math.random()*80) + '%',
+      top: (20 + Math.random()*30) + '%',
+      width:'8px',height:'8px',borderRadius:'2px',
+      background: i%2 ? '#34A853' : '#4285f4',
+      transform:`translateY(0) scale(0.6) rotate(${Math.random()*360}deg)`,
+      opacity:1, pointerEvents:'none', zIndex:9999,
+      transition:'transform 700ms cubic-bezier(.2,.9,.2,1), opacity 700ms'
+    });
+    document.body.appendChild(c);
+    requestAnimationFrame(()=> {
+      c.style.transform = `translateY(${80 + Math.random()*40}px) scale(${1+Math.random()}) rotate(${Math.random()*720}deg)`;
+      c.style.opacity = '0';
+    });
+    setTimeout(()=> c.remove(), 900);
+  }
+
+  // redirect to Gmail after brief pause
+  setTimeout(()=> {
+    window.location.href = 'https://mail.google.com';
+  }, 900);
+}
+
+/* wrong PIN animation */
+function shakeAndClear(){
+  const card = document.querySelector('.card');
+  card.style.transition = 'transform 260ms cubic-bezier(.2,.9,.2,1)';
+  card.style.transform = 'translateX(-8px)';
+  setTimeout(()=> card.style.transform = 'translateX(8px)', 80);
+  setTimeout(()=> card.style.transform = '', 220);
+  setTimeout(()=> {
+    entered = '';
+    updateDots();
+    statusEl.textContent = '';
+  }, 700);
+}
+
+/* initialize: prefetch remote PIN in background for speed */
+ensureRemotePin();
+
+/* accessibility: allow keyboard for testing */
+window.addEventListener('keydown', (ev)=>{
+  if(ev.key === 'Backspace'){ document.querySelector('[data-value="del"]').click(); ev.preventDefault(); }
+  if(/^[0-9]$/.test(ev.key)){ const btn = document.querySelector(`[data-value="${ev.key}"]`); if(btn) btn.click(); }
+});
+</script>
 </body>
 </html>
